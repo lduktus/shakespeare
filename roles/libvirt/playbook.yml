@@ -1,0 +1,5 @@
+---
+- name: Libvirt setup
+  hosts: all
+  roles:
+    - role: "{{ playbook_dir }}"

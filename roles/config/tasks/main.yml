@@ -1,0 +1,23 @@
+---
+- name: Ensure gtk-3 config directory exists
+  ansible.builtin.file:
+    path: "{{ ansible_env.HOME }}/.config/gtk-3.0"
+    state: directory
+    mode: '0775'
+    owner: "{{ lookup('env', 'USER') }}"
+    group: "{{ lookup('env', 'USER') }}"
+    recurse: true
+
+- name: Modifying gtk.css
+  ansible.builtin.copy:
+    dest: "{{ config_dir }}/gtk-3.0/gtk.css"
+    mode: '0755'
+    owner: "{{ lookup('env', 'USER') }}"
+    group: "{{ lookup('env', 'USER') }}"
+    content: |
+      VteTerminal,
+      TerminalScreen,
+      vte-terminal {
+        padding: 4px 4px 4px 4px;
+        -VteTerminal-inner-border: 4px 4px 4px 4px;
+      }

@@ -1,0 +1,5 @@
+---
+- name: Flatpak setup
+  hosts: all
+  roles:
+     - role: "{{ playbook_dir }}"

@@ -1,0 +1,62 @@
+---
+- name: Set default zone of firewalld to 'public'
+  ansible.builtin.command: firewall-cmd --set-default-zone=public
+  register: result
+  changed_when: result.rc = 0
+
+- name: Configure MAC address randomization
+  become: true
+  ansible.builtin.copy:
+    dest: /etc/NetworkManager/conf.d/00-random-mac.conf
+    mode: '0644'
+    owner: root
+    group: root
+    content: |
+      [device]
+      wifi.scan-rand-mac-address=yes
+
+      [connection]
+      wifi.cloned-mac-address=random
+      ethernet.cloned-mac-address=random
+      connection.stable-id=${CONNECTION}/${BOOT}
+
+- name: Configure NetworkManager to use systemd-resolved
+  become: true
+  ansible.builtin.copy:
+    dest: /etc/NetworkManager/conf.d/10-dns.conf
+    mode: '0644'
+    owner: root
+    group: root
+    content: |
+      [main]
+      dns=systemd-resolved
+
+- name: Configure DNS via systemd-resolved
+  become: true
+  ansible.builtin.template:
+    src: templates/resolved.conf.j2
+    dest: /etc/systemd/resolved.conf
+    mode: '0644'
+    owner: root
+    group: root
+
+- name: Ensure systemd-resolved is enabled
+  become: true
+  ansible.builtin.systemd:
+    name: systemd-resolved
+    enabled: true
+    state: restarted
+
+- name: Ensure systemd-resolved is enabled
+  become: true
+  ansible.builtin.systemd:
+    name: systemd-resolved
+    enabled: true
+    state: restarted
+
+- name: Restart NetworkManager
+  become: true
+  ansible.builtin.systemd:
+    name: network
+    enabled: true
+    state: restarted

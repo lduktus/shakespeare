@@ -1,0 +1,40 @@
+---
+- name: Gather package facts
+  ansible.builtin.package_facts:
+    manager: auto
+
+- name: Check if required packages are installed
+  ansible.builtin.assert:
+    that: "'virt-install' in ansible_facts.packages"
+    fail_msg: "The package virt-install is not installed."
+
+- name: Add user to libvirt group
+  become: true
+  ansible.builtin.user:
+    name: "{{ lookup('env', 'USER') }}"
+    groups:
+      - kvm
+      - libvirt
+      - qemu
+    append: true
+
+- name: Ensure libvirtd is enabled
+  ansible.builtin.service:
+    name: libvirtd
+    enabled: true
+    state: restarted
+
+- name: Ensure default network autostarts
+  become: true
+  ansible.builtin.command:
+    cmd: virsh net-autostart default
+  register: result
+  changed_when: result.rc = 0
+
+- name: Ensure libvirt user directory exists
+  ansible.builtin.file:
+    path: "{{ ansible_env.HOME }}/.local/libvirt/images"
+    state: directory
+    owner: "{{ lookup('env', 'USER') }}"
+    group: "{{ lookup('env', 'USER') }}"
+    mode: '0644'

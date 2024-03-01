@@ -1,0 +1,6 @@
+[Resolve]
+DNS={{ network_dns}}
+FallbackDNS={{ network_dns_fallback}}
+DNSOverTLS={{ 'yes' if network_dns_tls else 'auto' }}
+Cache=yes
+DNSStubListener=yes

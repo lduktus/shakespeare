@@ -1,0 +1,19 @@
+---
+- name: Personal setup
+  vars:
+    home_dir: "{{ lookup('env', 'HOME') }}"
+  hosts: all
+  connection: local
+  roles:
+    - role: flatpak
+      tags:
+        - flatpak
+    - role: config
+      tags:
+        - config
+    - role: network
+      tags:
+        - network
+    - role: libvirt
+      tags:
+        - libvirt

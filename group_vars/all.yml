@@ -1,0 +1,31 @@
+---
+flatpak_pkgs:
+  # basic styling
+  - org.kde.KStyle.Adwaita
+  - org.gtk.Gtk3theme.adw-gtk3
+  - org.gtk.Gtk3theme.adw-gtk3-dark
+  - org.gtk.Gtk3theme.Adwaita-dark
+  # apps
+  - com.bitwarden.desktop
+  - com.brave.Browser
+  - com.github.finefindus.eyedropper
+  - com.github.johnfactotum.Foliate
+  - com.github.tchx84.Flatseal
+  - com.google.Chrome
+  - com.mattjakeman.ExtensionManager
+  - io.github.celluloid_player.Celluloid
+  - io.github.mpobaschnig.Vaults
+  - org.gnome.Calculator
+  - org.gnome.Calendar
+  - org.gnome.clocks
+  - org.gnome.design.Contrast
+  - org.gnome.Evince
+  - org.gnome.Loupe
+  - org.gnome.Maps
+  - org.gnome.NautilusPreviewer
+  - org.gnome.TextEditor
+  - org.gnome.Weather
+  - org.gnome.World.PikaBackup
+  - org.mozilla.firefox
+  - org.zotero.Zotero
+  - re.sonny.Junction

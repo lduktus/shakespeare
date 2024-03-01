@@ -1,0 +1,92 @@
+---
+# Hacky solution 1
+- name: Create a list of system flatpaks
+  ansible.builtin.shell: |
+    set -o pipefail
+    flatpak list --system --columns=application | tail -n +1
+  register: sys_flatpaks
+  changed_when:
+    - sys_flatpaks.rc == 0
+    - sys_flatpaks|length>0
+
+# Hacky solution 2
+- name: Create a list of system flatpak repos
+  ansible.builtin.shell: |
+    set -o pipefail
+    flatpak remotes --system --columns=name | tail -n +1
+  register: sys_flatpak_remotes
+  changed_when:
+    - sys_flatpaks_remotes.rc == 0
+    - sys_flatpaks|length>0
+
+- name: Save a list of system flatpaks in users home
+  ansible.builtin.copy:
+    mode: '0755'
+    owner: "{{ lookup('env', 'USER') }}"
+    group: "{{ lookup('env', 'USER') }}"
+    content: "{{ sys_flatpaks }}"
+    dest: "{{ ansible_env.HOME }}/sys-flatpaks.txt"
+  when: flatpatk_output is defined
+
+- name: Save a list of system flatpaks in users home
+  ansible.builtin.copy:
+    mode: '0755'
+    owner: "{{ lookup('env', 'USER') }}"
+    group: "{{ lookup('env', 'USER') }}"
+    content: "{{ sys_flatpak_remotes }}"
+    dest: "{{ ansible_env.HOME }}/sys-flatpak-remotes.txt"
+  when: sys_flatpak_remotes is defined
+
+- name: Remove all system flatpaks
+  community.general.flatpak:
+    name: "{{ item }}"
+    method: system
+    state: absent
+  with_items: "{{ sys_flatpaks.stdout_lines }}"
+  when: sys_flatpaks is defined
+
+- name: Add flathub repos for user
+  community.general.flatpak_remote:
+    name: "{{ item.name }}"
+    state: present
+    flatpakrepo_url: "{{ item.url }}"
+    method: user
+  loop:
+    - name: flathub
+      url: https://flathub.org/repo/flathub.flatpakrepo
+    - name: flathub-beta
+      url: https://flathub.org/beta-repo/flathub-beta.flatpakrepo
+  register: result
+
+- name: Remove system repositories
+  become: true
+  community.general.flatpak_remote:
+    name: "{{ item }}"
+    state: absent
+  with_items: "{{ sys_flatpak_remotes.stdout_lines }}"
+  when: sys_flatpak_remotes is defined
+
+- name: Add additional language support for flatpaks (en,de,es,pt,it)
+  ansible.builtin.shell:
+    cmd: flatpak config --user --set languages 'en;de;es;pt;it'
+  when: flatpak_languages
+  register: stdout
+  changed_when: stdout.rc == 0
+
+- name: Install flatpaks from stable remote
+  community.general.flatpak:
+    name: "{{ item }}"
+    remote: flathub
+    method: user
+    state: present
+  with_items: "{{ flatpak_pkgs }}"
+  when: flatpak_pkgs is defined and flathub_out is defined and flathub_out.rc == 0
+
+- name: Install flatpaks from beta remote
+  community.general.flatpak:
+    name: "{{ item }}"
+    remote: flathub
+    method: user
+    state: present
+  with_items: "{{ flatpak_pkgs_beta }}"
+  when: flatpak_pkgs_beta is defined and flathub-beta_out is defined and flathub-beta_out.rc == 0
